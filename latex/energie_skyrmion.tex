@@ -1,0 +1,1227 @@
+\documentclass[a4paper,11pt]{article}
+
+% ============================================================
+% PACKAGES
+% ============================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{mathtools}
+
+\usepackage{geometry}
+\usepackage{physics}
+
+\usepackage{booktabs}
+\usepackage{siunitx}
+
+\geometry{
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+
+% ============================================================
+% COMMANDES
+% ============================================================
+
+\newcommand{\m}{\bm{m}}
+\newcommand{\er}{\bm{e}_r}
+\newcommand{\ephi}{\bm{e}_\varphi}
+\newcommand{\ez}{\bm{e}_z}
+
+%\newcommand{\dd}{\mathrm{d}}
+\newcommand{\E}{\mathcal{E}}
+
+% ============================================================
+% DOCUMENT
+% ============================================================
+
+\title{
+Minimisation numérique de l'énergie micromagnétique\\
+d'une texture axisymétrique avec DMI de volume
+}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+% ============================================================
+\section{Problème physique}
+% ============================================================
+
+On considère un cylindre ferromagnétique de rayon $R$ et d'épaisseur $t$.
+L'axe du cylindre est pris suivant $Oz$.
+
+Dans le cas considéré ici,
+
+\begin{equation}
+R = \SI{50}{nm},
+\qquad
+t = \SI{10}{nm}.
+\end{equation}
+
+On suppose que l'aimantation ne dépend pas de $z$ et que la texture est
+invariante par rotation autour de $Oz$.
+
+L'aimantation réduite est définie par
+
+\begin{equation}
+\m = \frac{\bm M}{M_s},
+\end{equation}
+
+où $M_s$ est l'aimantation à saturation. Par définition,
+
+\begin{equation}
+\boxed{|\m|=1.}
+\end{equation}
+
+On néglige ici l'énergie magnétostatique et on considère uniquement :
+
+\begin{enumerate}
+    \item l'énergie d'échange ;
+    \item le DMI de volume ;
+    \item l'anisotropie magnétocristalline uniaxiale.
+\end{enumerate}
+
+% ============================================================
+\section{Paramétrisation de l'aimantation}
+% ============================================================
+
+On introduit un angle polaire $\theta(r)$ mesuré par rapport à l'axe $Oz$
+et un angle d'hélicité $\phi$.
+
+La texture est écrite
+
+\begin{equation}
+\boxed{
+\m(r,\varphi)
+=
+\sin\theta(r)
+\left[
+\cos\phi\,\er
++
+\sin\phi\,\ephi
+\right]
++
+\cos\theta(r)\,\ez.
+}
+\end{equation}
+
+On a donc
+
+\begin{equation}
+m_r = \sin\theta\cos\phi,
+\end{equation}
+
+\begin{equation}
+m_\varphi = \sin\theta\sin\phi,
+\end{equation}
+
+et
+
+\begin{equation}
+m_z = \cos\theta.
+\end{equation}
+
+L'angle $\phi$ est supposé constant dans tout le disque.
+
+Les cas particuliers sont :
+
+\begin{align}
+\phi &= 0,\pi
+&&\text{texture de Néel},\\
+\phi &= +\frac{\pi}{2},-\frac{\pi}{2}
+&&\text{texture de Bloch}.
+\end{align}
+
+Dans le programme numérique, $\phi$ est toutefois laissé libre afin que la
+minimisation détermine elle-même l'hélicité de l'état fondamental.
+
+% ============================================================
+\section{Énergie micromagnétique}
+% ============================================================
+
+L'énergie totale s'écrit
+
+\begin{equation}
+E =
+E_{\mathrm{ex}}
++
+E_{\mathrm{DMI}}
++
+E_{\mathrm{an}}.
+\end{equation}
+
+% ------------------------------------------------------------
+\subsection{Énergie d'échange}
+% ------------------------------------------------------------
+
+L'énergie d'échange est
+
+\begin{equation}
+E_{\mathrm{ex}}
+=
+A
+\int_V
+(\nabla\m)^2
+\,\dd V,
+\end{equation}
+
+où $A$ est la constante d'échange, en \si{J.m^{-1}}.
+
+Pour la texture axisymétrique considérée,
+
+\begin{equation}
+(\nabla\m)^2
+=
+\left(
+\frac{\dd\theta}{\dd r}
+\right)^2
++
+\frac{\sin^2\theta}{r^2}.
+\end{equation}
+
+Par conséquent,
+
+\begin{equation}
+E_{\mathrm{ex}}
+=
+2\pi t A
+\int_0^R
+\left[
+r\left(\frac{\dd\theta}{\dd r}\right)^2
++
+\frac{\sin^2\theta}{r}
+\right]
+\dd r.
+\end{equation}
+
+% ------------------------------------------------------------
+\subsection{DMI de volume}
+% ------------------------------------------------------------
+
+On considère un DMI de volume de densité
+
+\begin{equation}
+w_{\mathrm{DMI}}
+=
+D\,\m\cdot(\nabla\times\m),
+\end{equation}
+
+où $D$ est la constante de DMI volumique, en \si{J.m^{-2}}.
+
+Pour la texture considérée,
+
+\begin{equation}
+\boxed{
+\m\cdot(\nabla\times\m)
+=
+\sin\phi
+\left[
+\frac{\dd\theta}{\dd r}
++
+\frac{\sin\theta\cos\theta}{r}
+\right].
+}
+\end{equation}
+
+On obtient donc
+
+\begin{equation}
+E_{\mathrm{DMI}}
+=
+2\pi tD\sin\phi
+\int_0^R
+\left[
+r\frac{\dd\theta}{\dd r}
++
+\sin\theta\cos\theta
+\right]
+\dd r.
+\end{equation}
+
+% ------------------------------------------------------------
+\subsection{Anisotropie}
+% ------------------------------------------------------------
+
+L'axe facile est supposé être $Oz$.
+
+La densité d'énergie d'anisotropie est
+
+\begin{equation}
+w_{\mathrm{an}}
+=
+-K_u m_z^2,
+\end{equation}
+
+avec $K_u>0$.
+
+Puisque
+
+\begin{equation}
+m_z=\cos\theta,
+\end{equation}
+
+on obtient
+
+\begin{equation}
+E_{\mathrm{an}}
+=
+-2\pi tK_u
+\int_0^R
+r\cos^2\theta
+\,\dd r.
+\end{equation}
+
+% ============================================================
+\section{Fonctionnelle totale}
+% ============================================================
+
+En regroupant les trois contributions,
+
+\begin{equation}
+\boxed{
+E[\theta,\phi]
+=
+2\pi t
+\int_0^R
+\left\{
+A
+\left[
+r\theta_r^2
++
+\frac{\sin^2\theta}{r}
+\right]
++
+D\sin\phi
+\left[
+r\theta_r
++
+\sin\theta\cos\theta
+\right]
+-
+K_u r\cos^2\theta
+\right\}
+\dd r,
+}
+\end{equation}
+
+où
+
+\begin{equation}
+\theta_r
+=
+\frac{\dd\theta}{\dd r}.
+\end{equation}
+
+Cette fonctionnelle est celle que l'on cherche à minimiser numériquement.
+
+% ============================================================
+\section{Adimensionnement}
+% ============================================================
+
+Pour améliorer le conditionnement numérique, on introduit la coordonnée
+radiale réduite
+
+\begin{equation}
+\boxed{
+x=\frac{r}{R}.
+}
+\end{equation}
+
+Ainsi,
+
+\begin{equation}
+0\leq x\leq1,
+\qquad
+r=Rx,
+\qquad
+\dd r=R\dd x.
+\end{equation}
+
+De plus,
+
+\begin{equation}
+\frac{\dd\theta}{\dd r}
+=
+\frac{1}{R}
+\frac{\dd\theta}{\dd x}.
+\end{equation}
+
+On définit les deux paramètres sans dimension
+
+\begin{equation}
+\boxed{
+d=\frac{DR}{A}
+}
+\end{equation}
+
+et
+
+\begin{equation}
+\boxed{
+k=\frac{K_uR^2}{A}.
+}
+\end{equation}
+
+L'énergie peut alors être écrite sous la forme
+
+\begin{equation}
+\boxed{
+E
+=
+2\pi t A R\,\mathcal{E},
+}
+\end{equation}
+
+où l'énergie réduite est
+
+\begin{equation}
+\boxed{
+\mathcal{E}[\theta,\phi]
+=
+\int_0^1
+\left[
+x\theta_x^2
++
+\frac{\sin^2\theta}{x}
++
+d\sin\phi
+\left(
+x\theta_x
++
+\sin\theta\cos\theta
+\right)
+-
+kx\cos^2\theta
+\right]
+\dd x.
+}
+\end{equation}
+
+Ici,
+
+\begin{equation}
+\theta_x
+=
+\frac{\dd\theta}{\dd x}.
+\end{equation}
+
+Le facteur global $2\pi tAR$ n'a aucune influence sur la position du
+minimum. Le programme minimise donc directement $\mathcal{E}$.
+
+% ============================================================
+\section{Conditions aux limites}
+% ============================================================
+
+Au centre du cylindre, on impose
+
+\begin{equation}
+\boxed{
+\theta(0)=0.
+}
+\end{equation}
+
+L'aimantation au centre est donc
+
+\begin{equation}
+\m(0)=\ez.
+\end{equation}
+
+La valeur de $\theta(1)$ n'est pas imposée.
+
+Elle doit être déterminée par la minimisation de l'énergie.
+
+% ============================================================
+\section{Condition de Brown généralisée}
+% ============================================================
+
+La variation de l'énergie fait apparaître un terme de bord.
+
+La densité lagrangienne réduite est
+
+\begin{equation}
+\mathcal{L}
+=
+x\theta_x^2
++
+\frac{\sin^2\theta}{x}
++
+d\sin\phi
+\left(
+x\theta_x
++
+\sin\theta\cos\theta
+\right)
+-
+kx\cos^2\theta.
+\end{equation}
+
+On a
+
+\begin{equation}
+\frac{\partial\mathcal L}
+{\partial\theta_x}
+=
+2x\theta_x
++
+dx\sin\phi.
+\end{equation}
+
+Au bord $x=1$, la variation $\delta\theta(1)$ est libre. La condition
+naturelle est donc
+
+\begin{equation}
+\left.
+\frac{\partial\mathcal L}
+{\partial\theta_x}
+\right|_{x=1}
+=0.
+\end{equation}
+
+On obtient
+
+\begin{equation}
+2\theta_x(1)
++
+d\sin\phi
+=0.
+\end{equation}
+
+Ainsi,
+
+\begin{equation}
+\boxed{
+\theta_x(1)
+=
+-\frac{d}{2}\sin\phi.
+}
+\end{equation}
+
+En revenant aux variables dimensionnelles,
+
+\begin{equation}
+\theta_x
+=
+R\theta_r,
+\end{equation}
+
+d'où
+
+\begin{equation}
+\boxed{
+2A\theta_r(R)
++
+D\sin\phi
+=
+0.
+}
+\end{equation}
+
+Il s'agit de la condition de Brown généralisée dans le modèle considéré.
+
+Dans le calcul numérique, cette condition n'est pas imposée comme une
+contrainte. Elle doit être satisfaite par la configuration minimisante.
+
+% ============================================================
+\section{Équation d'Euler--Lagrange}
+% ============================================================
+
+Pour référence, la condition stationnaire dans le volume est
+
+\begin{equation}
+\frac{\partial\mathcal L}{\partial\theta}
+-
+\frac{\dd}{\dd x}
+\left(
+\frac{\partial\mathcal L}{\partial\theta_x}
+\right)
+=0.
+\end{equation}
+
+On obtient
+
+\begin{equation}
+\boxed{
+\theta_{xx}
++
+\frac{1}{x}\theta_x
+-
+\frac{\sin\theta\cos\theta}{x^2}
++
+\frac{d}{x}\sin\phi\,\sin^2\theta
++
+k\sin\theta\cos\theta
+=
+0.
+}
+\end{equation}
+
+Cette équation est une condition de stationnarité de l'énergie.
+
+Elle possède en général plusieurs solutions. Certaines peuvent être des
+maxima ou des minima locaux de l'énergie.
+
+C'est précisément pour cette raison que l'on préfère ici une minimisation
+directe de la fonctionnelle pour rechercher l'état fondamental.
+
+% ============================================================
+\section{Discrétisation numérique}
+% ============================================================
+
+On introduit un maillage uniforme
+
+\begin{equation}
+x_i=ih,
+\qquad
+i=0,\ldots,N,
+\end{equation}
+
+avec
+
+\begin{equation}
+\boxed{
+h=\frac{1}{N}.
+}
+\end{equation}
+
+On note
+
+\begin{equation}
+\theta_i=\theta(x_i).
+\end{equation}
+
+La condition au centre est imposée par
+
+\begin{equation}
+\boxed{
+\theta_0=0.
+}
+\end{equation}
+
+Les variables optimisées sont donc
+
+\begin{equation}
+\boxed{
+q=
+(\theta_1,\theta_2,\ldots,\theta_N,\phi).
+}
+\end{equation}
+
+Il y a ainsi $N+1$ variables d'optimisation.
+
+La valeur $\theta_0$ n'est pas optimisée.
+
+% ============================================================
+\section{Approximation par éléments linéaires}
+% ============================================================
+
+Sur l'élément $[x_i,x_{i+1}]$, on approxime $\theta(x)$ par une fonction
+linéaire :
+
+\begin{equation}
+\theta(x)
+=
+N_1(x)\theta_i
++
+N_2(x)\theta_{i+1},
+\end{equation}
+
+avec les fonctions de forme
+
+\begin{equation}
+N_1(x)=\frac{x_{i+1}-x}{h},
+\end{equation}
+
+\begin{equation}
+N_2(x)=\frac{x-x_i}{h}.
+\end{equation}
+
+La dérivée est constante dans l'élément :
+
+\begin{equation}
+\boxed{
+\theta_x
+=
+\frac{\theta_{i+1}-\theta_i}{h}.
+}
+\end{equation}
+
+% ============================================================
+\section{Intégration de Gauss}
+% ============================================================
+
+L'intégrale sur chaque élément est calculée avec une quadrature de Gauss
+à deux points.
+
+Dans la coordonnée locale $\xi\in[-1,1]$, les deux points sont
+
+\begin{equation}
+\xi_1=-\frac{1}{\sqrt{3}},
+\qquad
+\xi_2=+\frac{1}{\sqrt{3}},
+\end{equation}
+
+avec les poids
+
+\begin{equation}
+w_1=w_2=1.
+\end{equation}
+
+La transformation est
+
+\begin{equation}
+x
+=
+\frac{x_i+x_{i+1}}{2}
++
+\frac{h}{2}\xi.
+\end{equation}
+
+Le jacobien est
+
+\begin{equation}
+\dd x=\frac{h}{2}\dd\xi.
+\end{equation}
+
+La contribution d'un élément à l'énergie est donc évaluée comme
+
+\begin{equation}
+\mathcal E_i
+\simeq
+\frac{h}{2}
+\sum_{a=1}^{2}
+\mathcal L(x_{i,a},\theta_{i,a},\theta_x)
+\end{equation}
+
+et
+
+\begin{equation}
+\boxed{
+\mathcal E
+\simeq
+\sum_{i=0}^{N-1}\mathcal E_i.
+}
+\end{equation}
+
+% ============================================================
+\section{Gradient analytique}
+% ============================================================
+
+L'élément essentiel de l'implémentation numérique est de fournir
+explicitement le gradient de l'énergie à l'algorithme de minimisation.
+
+On écrit
+
+\begin{equation}
+\nabla_q\mathcal E
+=
+\left(
+\frac{\partial\mathcal E}{\partial\theta_1},
+\ldots,
+\frac{\partial\mathcal E}{\partial\theta_N},
+\frac{\partial\mathcal E}{\partial\phi}
+\right).
+\end{equation}
+
+% ------------------------------------------------------------
+\subsection{Dérivée par rapport à $\theta$}
+% ------------------------------------------------------------
+
+On a
+
+\begin{equation}
+\frac{\partial\mathcal L}{\partial\theta}
+=
+\frac{2\sin\theta\cos\theta}{x}
++
+d\sin\phi\cos(2\theta)
++
+2kx\sin\theta\cos\theta.
+\end{equation}
+
+D'autre part,
+
+\begin{equation}
+\boxed{
+\frac{\partial\mathcal L}
+{\partial\theta_x}
+=
+2x\theta_x
++
+dx\sin\phi.
+}
+\end{equation}
+
+Puisque
+
+\begin{equation}
+\theta
+=
+N_1\theta_i+N_2\theta_{i+1},
+\end{equation}
+
+on a
+
+\begin{equation}
+\frac{\partial\theta}{\partial\theta_i}
+=
+N_1,
+\qquad
+\frac{\partial\theta}{\partial\theta_{i+1}}
+=
+N_2.
+\end{equation}
+
+Et
+
+\begin{equation}
+\frac{\partial\theta_x}{\partial\theta_i}
+=
+-\frac{1}{h},
+\end{equation}
+
+\begin{equation}
+\frac{\partial\theta_x}{\partial\theta_{i+1}}
+=
++\frac{1}{h}.
+\end{equation}
+
+Ainsi, pour un point de Gauss donné, la contribution au gradient du noeud
+gauche est
+
+\begin{equation}
+\boxed{
+\frac{\partial\mathcal L}{\partial\theta_i}
+=
+\frac{\partial\mathcal L}{\partial\theta}N_1
+-
+\frac{1}{h}
+\frac{\partial\mathcal L}{\partial\theta_x}.
+}
+\end{equation}
+
+Pour le noeud droit,
+
+\begin{equation}
+\boxed{
+\frac{\partial\mathcal L}{\partial\theta_{i+1}}
+=
+\frac{\partial\mathcal L}{\partial\theta}N_2
++
+\frac{1}{h}
+\frac{\partial\mathcal L}{\partial\theta_x}.
+}
+\end{equation}
+
+Les contributions provenant des éléments adjacents sont ensuite sommées.
+
+% ------------------------------------------------------------
+\subsection{Dérivée par rapport à $\phi$}
+% ------------------------------------------------------------
+
+La dépendance en $\phi$ est uniquement contenue dans le terme DMI :
+
+\begin{equation}
+d\sin\phi
+\left(
+x\theta_x+\sin\theta\cos\theta
+\right).
+\end{equation}
+
+Par conséquent,
+
+\begin{equation}
+\boxed{
+\frac{\partial\mathcal L}{\partial\phi}
+=
+d\cos\phi
+\left(
+x\theta_x
++
+\sin\theta\cos\theta
+\right).
+}
+\end{equation}
+
+Le gradient global par rapport à $\phi$ est donc
+
+\begin{equation}
+\boxed{
+\frac{\partial\mathcal E}{\partial\phi}
+=
+d\cos\phi
+\int_0^1
+\left(
+x\theta_x
++
+\sin\theta\cos\theta
+\right)
+\dd x.
+}
+\end{equation}
+
+À l'état stationnaire, on doit avoir
+
+\begin{equation}
+\frac{\partial\mathcal E}{\partial\phi}=0.
+\end{equation}
+
+Pour une texture non triviale, cela conduit généralement à
+
+\begin{equation}
+\cos\phi=0,
+\end{equation}
+
+soit
+
+\begin{equation}
+\boxed{
+\phi=\pm\frac{\pi}{2}.
+}
+\end{equation}
+
+Le signe sélectionné dépend du signe de $D$ et de la texture obtenue.
+
+% ============================================================
+\section{Pourquoi utiliser le gradient analytique ?}
+% ============================================================
+
+Une minimisation numérique nécessite de calculer
+
+\begin{equation}
+\nabla_q\mathcal E.
+\end{equation}
+
+Une méthode naïve pourrait estimer chaque dérivée par différences finies :
+
+\begin{equation}
+\frac{\partial\mathcal E}{\partial q_j}
+\simeq
+\frac{
+\mathcal E(q_j+\epsilon)
+-
+\mathcal E(q_j-\epsilon)
+}
+{2\epsilon}.
+\end{equation}
+
+Pour $N+1$ variables, cela nécessite de nombreuses évaluations de
+l'énergie à chaque itération.
+
+Lorsque $N$ augmente, le coût devient rapidement important.
+
+Dans l'implémentation utilisée ici, le gradient est calculé analytiquement.
+Une seule évaluation de l'énergie et du gradient est alors nécessaire à
+chaque itération.
+
+De plus, les opérations sur les éléments sont vectorisées avec
+\texttt{NumPy}.
+
+% ============================================================
+\section{Algorithme de minimisation}
+% ============================================================
+
+On utilise l'algorithme
+
+\begin{equation}
+\boxed{
+\texttt{L-BFGS-B}
+}
+\end{equation}
+
+qui est une méthode quasi-newtonienne adaptée aux problèmes de grande
+dimension et permettant d'imposer des bornes sur les variables.
+
+Dans le programme, on impose
+
+\begin{equation}
+0\leq\theta_i\leq\pi,
+\end{equation}
+
+et
+
+\begin{equation}
+-\pi\leq\phi\leq\pi.
+\end{equation}
+
+La condition
+
+\begin{equation}
+\theta_0=0
+\end{equation}
+
+est imposée exactement en ne faisant pas de $\theta_0$ une variable
+d'optimisation.
+
+En revanche, aucune contrainte n'est imposée sur $\theta_N=\theta(R)$.
+
+La condition de Brown doit donc émerger naturellement.
+
+% ============================================================
+\section{Recherche du minimum global}
+% ============================================================
+
+Une méthode de minimisation locale ne garantit pas à elle seule le
+minimum global.
+
+Il est donc utile de lancer l'algorithme depuis plusieurs configurations
+initiales.
+
+Par exemple,
+
+\begin{equation}
+\theta_{\mathrm{init}}(x)
+=
+\theta_{\max}
+\tanh\left(\frac{x}{\delta}\right),
+\end{equation}
+
+avec différentes valeurs de $\delta$ et $\theta_{\max}$.
+
+On peut également utiliser différentes valeurs initiales de $\phi$ :
+
+\begin{equation}
+\phi_{\mathrm{init}}
+=
+0,
+\quad
++\frac{\pi}{2},
+\quad
+-\frac{\pi}{2},
+\quad
+\pi.
+\end{equation}
+
+On obtient alors plusieurs minima locaux
+
+\begin{equation}
+\mathcal E_1,
+\mathcal E_2,\ldots
+\end{equation}
+
+et l'état retenu comme candidat à l'état fondamental est celui qui possède
+l'énergie la plus faible :
+
+\begin{equation}
+\boxed{
+\mathcal E_{\mathrm{GS}}
+=
+\min_j\mathcal E_j.
+}
+\end{equation}
+
+% ============================================================
+\section{Vérification numérique de la condition de Brown}
+% ============================================================
+
+Une fois la minimisation terminée, on calcule la dérivée au bord par une
+différence finie :
+
+\begin{equation}
+\theta_x(1)
+\simeq
+\frac{\theta_N-\theta_{N-1}}{h}.
+\end{equation}
+
+On définit alors le résidu de Brown
+
+\begin{equation}
+\boxed{
+B_{\mathrm{Brown}}
+=
+2\theta_x(1)
++
+d\sin\phi.
+}
+\end{equation}
+
+Une solution correctement minimisée doit vérifier
+
+\begin{equation}
+\boxed{
+B_{\mathrm{Brown}}\simeq0.
+}
+\end{equation}
+
+En unités dimensionnelles,
+
+\begin{equation}
+B_{\mathrm{Brown}}^{\mathrm{dim}}
+=
+2A\theta_r(R)
++
+D\sin\phi.
+\end{equation}
+
+On doit donc également avoir
+
+\begin{equation}
+\boxed{
+2A\theta_r(R)+D\sin\phi\simeq0.
+}
+\end{equation}
+
+% ============================================================
+\section{Contrôle de convergence en $N$}
+% ============================================================
+
+Pour vérifier que la solution numérique ne dépend pas du maillage, on peut
+effectuer les calculs successivement pour
+
+\begin{equation}
+N=50,\quad100,\quad200,\quad400,\quad800.
+\end{equation}
+
+On doit vérifier la convergence de plusieurs grandeurs :
+
+\begin{enumerate}
+    \item l'énergie minimale ;
+    \item la valeur de $\phi$ ;
+    \item la valeur de $\theta(R)$ ;
+    \item le profil $\theta(r)$ ;
+    \item le résidu de Brown.
+\end{enumerate}
+
+On doit observer
+
+\begin{equation}
+E_N\longrightarrow E_\infty
+\end{equation}
+
+et
+
+\begin{equation}
+\theta_N(r)
+\longrightarrow
+\theta(r).
+\end{equation}
+
+Une convergence correcte doit également conduire à
+
+\begin{equation}
+B_{\mathrm{Brown}}\longrightarrow0.
+\end{equation}
+
+% ============================================================
+\section{Composantes de l'aimantation}
+% ============================================================
+
+Une fois $\theta(r)$ et $\phi$ déterminés, les composantes de l'aimantation
+sont
+
+\begin{equation}
+\boxed{
+m_r(r)
+=
+\sin\theta(r)\cos\phi,
+}
+\end{equation}
+
+\begin{equation}
+\boxed{
+m_\varphi(r)
+=
+\sin\theta(r)\sin\phi,
+}
+\end{equation}
+
+et
+
+\begin{equation}
+\boxed{
+m_z(r)
+=
+\cos\theta(r).
+}
+\end{equation}
+
+Le programme représente notamment
+
+\begin{equation}
+\boxed{
+m_z(r)=\cos\theta(r).
+}
+\end{equation}
+
+Cette quantité permet de visualiser directement la composante de
+l'aimantation parallèle à l'axe du cylindre.
+
+% ============================================================
+\section{Résumé de la méthode numérique}
+% ============================================================
+
+La procédure complète est donc
+
+\begin{equation}
+\boxed{
+\begin{array}{c}
+\text{Choix de }A,D,K_u,R,t
+\\[1mm]
+\downarrow
+\\[1mm]
+d=DR/A,\qquad k=K_uR^2/A
+\\[1mm]
+\downarrow
+\\[1mm]
+x=r/R
+\\[1mm]
+\downarrow
+\\[1mm]
+\theta_0=0
+\\[1mm]
+\downarrow
+\\[1mm]
+q=(\theta_1,\ldots,\theta_N,\phi)
+\\[1mm]
+\downarrow
+\\[1mm]
+\text{calcul de }\mathcal E(q)
+\\[1mm]
+\downarrow
+\\[1mm]
+\text{calcul analytique de }\nabla_q\mathcal E
+\\[1mm]
+\downarrow
+\\[1mm]
+\text{minimisation L-BFGS-B}
+\\[1mm]
+\downarrow
+\\[1mm]
+\text{plusieurs configurations initiales}
+\\[1mm]
+\downarrow
+\\[1mm]
+\text{sélection de l'énergie minimale}
+\\[1mm]
+\downarrow
+\\[1mm]
+\text{vérification de Brown}
+\\[1mm]
+\downarrow
+\\[1mm]
+\theta(r),\quad
+m_z(r)=\cos\theta(r),\quad
+\phi.
+\end{array}
+}
+\end{equation}
+
+L'intérêt principal de cette approche est qu'elle cherche directement un
+minimum de la fonctionnelle d'énergie. Elle n'est donc pas limitée à la
+recherche d'une solution particulière de l'équation d'Euler--Lagrange.
+
+\end{document}

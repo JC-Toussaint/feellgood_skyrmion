@@ -1,0 +1,25 @@
+\babel@toc {french}{}\relax 
+\contentsline {section}{\numberline {1}Problème physique}{2}{}%
+\contentsline {section}{\numberline {2}Paramétrisation de l'aimantation}{2}{}%
+\contentsline {section}{\numberline {3}Énergie micromagnétique}{3}{}%
+\contentsline {subsection}{\numberline {3.1}Énergie d'échange}{3}{}%
+\contentsline {subsection}{\numberline {3.2}DMI de volume}{3}{}%
+\contentsline {subsection}{\numberline {3.3}Anisotropie}{3}{}%
+\contentsline {section}{\numberline {4}Fonctionnelle totale}{4}{}%
+\contentsline {section}{\numberline {5}Adimensionnement}{4}{}%
+\contentsline {section}{\numberline {6}Conditions aux limites}{5}{}%
+\contentsline {section}{\numberline {7}Condition de Brown généralisée}{5}{}%
+\contentsline {section}{\numberline {8}Équation d'Euler--Lagrange}{6}{}%
+\contentsline {section}{\numberline {9}Discrétisation numérique}{6}{}%
+\contentsline {section}{\numberline {10}Approximation par éléments linéaires}{6}{}%
+\contentsline {section}{\numberline {11}Intégration de Gauss}{7}{}%
+\contentsline {section}{\numberline {12}Gradient analytique}{7}{}%
+\contentsline {subsection}{\numberline {12.1}Dérivée par rapport à $\theta $}{7}{}%
+\contentsline {subsection}{\numberline {12.2}Dérivée par rapport à $\phi $}{8}{}%
+\contentsline {section}{\numberline {13}Pourquoi utiliser le gradient analytique ?}{9}{}%
+\contentsline {section}{\numberline {14}Algorithme de minimisation}{9}{}%
+\contentsline {section}{\numberline {15}Recherche du minimum global}{9}{}%
+\contentsline {section}{\numberline {16}Vérification numérique de la condition de Brown}{10}{}%
+\contentsline {section}{\numberline {17}Contrôle de convergence en $N$}{10}{}%
+\contentsline {section}{\numberline {18}Composantes de l'aimantation}{11}{}%
+\contentsline {section}{\numberline {19}Résumé de la méthode numérique}{11}{}%
