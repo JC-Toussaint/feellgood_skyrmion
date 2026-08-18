@@ -284,7 +284,7 @@ def run_skyrmion_1d(R, A, D, Ku, N_disc, maxiter, formula_str, progress_callback
         if step_callback:
             step_callback(i + 1)
 
-    # Tri par énergie minimale décroissante
+    # Tri par énergie minimale décroissante (le premier élément est le minimum global)
     solutions.sort(key=lambda item: item[0])
     Emin, theta, phi, _ = solutions[0]
 
@@ -582,7 +582,7 @@ class MagnetizationPlotPanel(QtWidgets.QFrame):
 # ==============================================================================
 class PickedValuePanel(QtWidgets.QFrame):
     """
-    Affiche la valeur numérique calculée pour la condition au bord r = R.
+    Affiche l'angle phi optimal retenu et la valeur numérique calculée pour la condition au bord r = R.
     """
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -591,20 +591,28 @@ class PickedValuePanel(QtWidgets.QFrame):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
 
-        group = QGroupBox("Vérification au bord (r = R)")
+        group = QGroupBox("Résultats physiques retenus & Vérification au bord (r = R)")
         group_layout = QVBoxLayout(group)
+
+        self.label_phi = QLabel("Angle azimutal optimal φ : -")
+        self.label_phi.setAlignment(QtCore.Qt.AlignCenter)
 
         self.label_brown = QLabel("Condition de Brown généralisée en r = R : -")
         self.label_brown.setAlignment(QtCore.Qt.AlignCenter)
 
         mono_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
         mono_font.setPointSize(10)
+        self.label_phi.setFont(mono_font)
         self.label_brown.setFont(mono_font)
 
+        group_layout.addWidget(self.label_phi)
         group_layout.addWidget(self.label_brown)
         layout.addWidget(group)
 
-    def set_brown_condition(self, brown_val):
+    def set_results(self, phi_val, brown_val):
+        phi_deg = np.degrees(phi_val)
+        self.label_phi.setText(f"Angle azimutal optimal φ : {phi_val:.6f} rad ({phi_deg:.2f}°)")
+
         self.label_brown.setText(
             f"Condition de Brown généralisée en r = R : [ 2·dθ/dx + d·sin(φ) ] = {brown_val:.4e}"
         )
@@ -957,16 +965,19 @@ class MainWindow(QMainWindow):
     def on_simulation_finished(self, results):
         self.btn_run.setEnabled(True)
 
+        phi_deg = np.degrees(results['phi'])
+
         self.log_text.appendPlainText("\n=== Bilan d'exécution ===")
         self.log_text.appendPlainText(f"• Maillage généré : {results['mesh_filename']}")
         self.log_text.appendPlainText(f"• Fichier sol généré : {results['sol_filename']}")
         self.log_text.appendPlainText(f"• Nombre total de nœuds : {results['num_nodes']}")
         self.log_text.appendPlainText(f"• Énergie minimale E : {results['E']:.6f}")
+        self.log_text.appendPlainText(f"• Angle azimutal optimal φ : {results['phi']:.6f} rad ({phi_deg:.2f}°)")
         self.log_text.appendPlainText(f"• Condition de Brown (r=R) : {results['brown_cond']:.4e}")
 
         # Mise à jour des graphiques dans l'onglet 1
         self.mag_panel.update_plot(results["r_nm"], results["theta"], results["phi"])
-        self.picked_panel.set_brown_condition(results["brown_cond"])
+        self.picked_panel.set_results(results["phi"], results["brown_cond"])
 
         # Mise à jour de la vue 3D dans l'onglet 2
         if "coords" in results and "triangles" in results and "m_all" in results:
